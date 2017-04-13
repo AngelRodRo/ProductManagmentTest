@@ -51,6 +51,9 @@
 						<th>Actions</th>
 					</thead>
 					<tbody class="products-table">
+						<?php
+							$count = 0;
+						?>
 						@foreach ($products as $product)
 							<tr>
 							<td>{{$product->id}} </td>
@@ -63,7 +66,14 @@
 								<a href="" class="btn btn-danger">Delete</a>
 							</td>
 							</tr>
+							<?php
+								$count += $product->total;
+							?>
 						@endforeach
+						<tr class="summary">
+							<td colspan="4"> <b >Total : </b> </td>
+							<td class="total-products"> {{$count}} </td>
+						</tr>
 					</tbody>
 				</table>
 
@@ -76,6 +86,8 @@
 	<script type="text/javascript">
 		
 		$(function() {
+
+
 
 			function genRow(id,name,quantity,price){
 				var $tr = $("<tr></tr>");
@@ -94,7 +106,10 @@
 					.append($total)
 					.append($opt);
 
-				$(".products-table").append($tr);
+				var cTotal =  Number($(".total-products").html());
+				cTotal += total;
+				$(".total-products").html(cTotal);
+				$(".summary").before($tr);
 
 			}
 			$(".product-form").submit(function(e) {
