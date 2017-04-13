@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Product;
-
+use SimpleXMLElement;
 class ProductController extends Controller
 {
     /**
@@ -41,17 +41,26 @@ class ProductController extends Controller
 
     public function saveProduct($product){
         $products = $this->getProducts();
-        $product["id"] = sizeof($products);
+        $newId = sizeof($products);
+        $product["id"] = $newId;
         $products[] = $product;
 
 
         file_put_contents(storage_path()."/app/products.json", json_encode($products));
 
+        foreach ($products as &$product) {
+            $product = (array) $product;
+            foreach ($product as $key => $value) {
+                $product[$key] = (string)$value;
+            }
+        }
+        
         $xml = new SimpleXMLElement('<root/>');
-        array_walk_recursive($products, array ($xml, 'addChild'));
+        array_walk_recursive( $products, array ($xml, 'addChild'));
 
         file_put_contents(storage_path()."/app/products.xml", $xml->asXML());
 
+        return $newId;
     }
 
     /**
@@ -74,7 +83,7 @@ class ProductController extends Controller
         $product["quantity"]= $data["quantity"];
         $product["price"] = $data["price"];
         $product["total"] = $data["quantity"] * $data["price"];
-        $this->saveProduct($product);
+        return $this->saveProduct($product);
 
     }
 

@@ -50,7 +50,7 @@
 						<th>Total</th>
 						<th>Actions</th>
 					</thead>
-					<tbody>
+					<tbody class="products-table">
 						@foreach ($products as $product)
 							<tr>
 							<td>{{$product->id}} </td>
@@ -76,9 +76,36 @@
 	<script type="text/javascript">
 		
 		$(function() {
+
+			function genRow(id,name,quantity,price){
+				var $tr = $("<tr></tr>");
+				var total = price * quantity;
+				var $id = $("<td>" + id + "</td>")
+				var $name = $("<td>" + name + "</td>")
+				var $quantity = $("<td>" + quantity + "</td>")
+				var $price = $("<td>" + price + "</td>")
+				var $total = $("<td>" + total + "</td>");
+				var $opt = $('<td><a href="" class="btn btn-primary">Edit</a><a href="" class="btn btn-danger">Delete</a></td>');
+
+				$tr.append($id)
+					.append($name)
+					.append($quantity)
+					.append($price)
+					.append($total)
+					.append($opt);
+
+				$(".products-table").append($tr);
+
+			}
 			$(".product-form").submit(function(e) {
 				e.preventDefault();
 				e.stopPropagation();
+				var form = this;
+				var params ={
+					name : this.name.value,
+					quantity : this.quantity.value,
+					price: this.price.value,
+				};
 
 				var data = $(this).serialize();
 
@@ -86,7 +113,13 @@
 					data: data,
 					type:'POST',
 					success:function(response) {
+						form.reset()
 						alert('Product registered! ');
+						genRow(response,params.name,params.quantity,params.price);
+
+					},
+					error:function() {
+						alert('Product not registered, try again and check your values');
 					}
 				});
 
