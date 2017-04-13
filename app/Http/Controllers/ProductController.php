@@ -16,8 +16,9 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        return view('products');
+    {   
+        $products =  $this->getProducts();
+        return view('products.index',compact('products'));
     }
 
     /**
@@ -33,11 +34,24 @@ class ProductController extends Controller
 
     }
 
+    public function getProducts(){
+        $products = json_decode(file_get_contents(storage_path()."/app/products.json"));
+        return $products;        
+    }
+
     public function saveProduct($product){
-        $products = json_decode(file_get_contents(storage_path()."products.json"));
+        $products = $this->getProducts();
         $product["id"] = sizeof($products);
         $products[] = $product;
-        file_put_contents(storage_path(), json_encode($products));
+
+
+        file_put_contents(storage_path()."/app/products.json", json_encode($products));
+
+        $xml = new SimpleXMLElement('<root/>');
+        array_walk_recursive($products, array ($xml, 'addChild'));
+
+        file_put_contents(storage_path()."/app/products.xml", $xml->asXML());
+
     }
 
     /**
@@ -49,7 +63,6 @@ class ProductController extends Controller
     public function store(Request $req)
     {
         $data = $req->all();
-
         $this->validate($req,[
             'name' => 'required',
             'quantity'=>'required',
@@ -60,7 +73,8 @@ class ProductController extends Controller
         $product["name"] = $data["name"];
         $product["quantity"]= $data["quantity"];
         $product["price"] = $data["price"];
-        saveProduct($product);
+        $product["total"] = $data["quantity"] * $data["price"];
+        $this->saveProduct($product);
 
     }
 
